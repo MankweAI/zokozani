@@ -6,10 +6,9 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { User, Lock, Users, LogInIcon } from "lucide-react";
 
-// Using the constant name from your provided code
 const DECEASED_INFO_FOR_LOGIN = {
-  fullName: "Lerato Nomvula Mnguni", // Used for display on login page
-  portraitPlaceholderUrl: "/assets/images/portrait.png", // Ensure this image exists in public/assets/images
+  fullName: "Lerato Nomvula Mnguni",
+  portraitPlaceholderUrl: "/assets/images/portrait.png",
 };
 
 export const MOCK_USER_STORAGE_KEY = "tributeWall_mockUser_v1";
@@ -19,13 +18,13 @@ export interface MockUserData {
   relationship: string;
 }
 
-const LoginPage: React.FC = () => {
+// Changed from React.FC to a standard function component definition
+export default function LoginPage() {
   const [fullName, setFullName] = useState("");
-  const [password, setPassword] = useState(""); // For simulation purposes only
+  const [password, setPassword] = useState("");
   const [relationship, setRelationship] = useState("");
-  // Corrected loading states
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true); // For initial auth check
-  const [isSubmitting, setIsSubmitting] = useState(false); // For form submission
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
@@ -36,13 +35,14 @@ const LoginPage: React.FC = () => {
         try {
           JSON.parse(storedUserData);
           router.replace("/");
-          // No need to setIsCheckingAuth(false) here, as component will unmount
+          // Return to ensure no further state updates if redirecting
+          return;
         } catch {
           localStorage.removeItem(MOCK_USER_STORAGE_KEY);
-          setIsCheckingAuth(false); // Allow login form to render if data corrupted
+          setIsCheckingAuth(false);
         }
       } else {
-        setIsCheckingAuth(false); // Allow login form to render if no user data
+        setIsCheckingAuth(false);
       }
     }
   }, [router]);
@@ -60,7 +60,7 @@ const LoginPage: React.FC = () => {
       return;
     }
 
-    setIsSubmitting(true); // Use isSubmitting for form action
+    setIsSubmitting(true);
     await new Promise((resolve) => setTimeout(resolve, 750));
 
     if (typeof window !== "undefined") {
@@ -74,32 +74,27 @@ const LoginPage: React.FC = () => {
       } catch (e) {
         console.error("Error saving user data to localStorage", e);
         setError("An unexpected error occurred. Please try again.");
-        setIsSubmitting(false); // Reset on error
+        setIsSubmitting(false);
       }
     } else {
       setError(
         "An unexpected error occurred. Please check your connection or browser."
       );
-      setIsSubmitting(false); // Reset on error
+      setIsSubmitting(false);
     }
   };
 
   if (isCheckingAuth) {
-    // Show loader during initial auth check
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-stone-100 to-slate-200">
-        {/* This loader matches the one from your provided code */}
         <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-amber-600"></div>
       </div>
     );
   }
 
   return (
-    // Matching the overall page structure and styling from your provided code
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-stone-100 to-slate-200 p-4 selection:bg-amber-500 selection:text-white animate-fade-in">
-      {/* Card styling from your provided code */}
       <div className="w-full max-w-sm bg-white shadow-2xl rounded-xl p-6 sm:p-10 space-y-6 transform transition-all hover:shadow-amber-200/50 duration-300 ease-out">
-        {/* Header section from your provided code */}
         <div className="text-center space-y-3 border-b border-slate-200 pb-6">
           <div className="w-20 h-20 mx-auto rounded-full overflow-hidden bg-slate-100 shadow-md flex items-center justify-center ring-2 ring-amber-100">
             <Image
@@ -120,28 +115,39 @@ const LoginPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Form structure from your provided code */}
         <form onSubmit={handleMockLogin} className="space-y-5">
           <div>
-            {/* Using the Input component structure from your code */}
+            <label
+              htmlFor="fullName"
+              className="block text-sm font-medium text-slate-700 mb-1.5"
+            >
+              Your Full Name
+            </label>
             <LoginInputComponent
               id="fullName"
-              name="fullName" // Added name for consistency
+              name="fullName"
               icon={
                 <User className="h-5 w-5 text-slate-400" aria-hidden="true" />
               }
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               placeholder="Enter your full name"
-              disabled={isSubmitting} // Use isSubmitting for form elements
+              disabled={isSubmitting}
               autoComplete="name"
             />
           </div>
 
           <div>
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-slate-700 mb-1.5"
+            >
+              Password{" "}
+              <span className="text-xs text-slate-400">(any characters)</span>
+            </label>
             <LoginInputComponent
               id="password"
-              name="password" // Added name
+              name="password"
               type="password"
               icon={
                 <Lock className="h-5 w-5 text-slate-400" aria-hidden="true" />
@@ -155,10 +161,16 @@ const LoginPage: React.FC = () => {
           </div>
 
           <div>
-
+            <label
+              htmlFor="relationship"
+              className="block text-sm font-medium text-slate-700 mb-1.5"
+            >
+              Your Relationship to{" "}
+              {DECEASED_INFO_FOR_LOGIN.fullName.split(" ")[0]}
+            </label>
             <LoginInputComponent
               id="relationship"
-              name="relationship" // Added name
+              name="relationship"
               icon={
                 <Users className="h-5 w-5 text-slate-400" aria-hidden="true" />
               }
@@ -170,7 +182,6 @@ const LoginPage: React.FC = () => {
           </div>
 
           {error && (
-            // Error styling from your code
             <p className="text-xs text-red-600 bg-red-50 p-3 rounded-md text-center border border-red-200 animate-shake">
               {error}
             </p>
@@ -179,12 +190,10 @@ const LoginPage: React.FC = () => {
           <div>
             <button
               type="submit"
-              disabled={isSubmitting} // Use isSubmitting
-              // Button styling from your code
+              disabled={isSubmitting}
               className="w-full flex items-center justify-center py-3 px-4 border border-transparent rounded-lg shadow-md text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-150 ease-in-out group"
             >
-              {isSubmitting ? ( // Check isSubmitting for spinner
-                // Spinner from your code (adapted for button context)
+              {isSubmitting ? (
                 <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
               ) : (
                 <>
@@ -199,7 +208,6 @@ const LoginPage: React.FC = () => {
           </div>
         </form>
 
-        {/* Footer text from your code */}
         <p className="text-center text-xs text-slate-500 pt-4">
           By signing in, you agree to share tributes respectfully.
         </p>
@@ -210,13 +218,12 @@ const LoginPage: React.FC = () => {
           &copy; {new Date().getFullYear()} The Family of{" "}
           {DECEASED_INFO_FOR_LOGIN.fullName}.
         </p>
+        <p>Frontend-only simulation for tribute sharing.</p>
       </footer>
     </div>
   );
-};
+}
 
-// Re-defining the Input component as it was in your provided snippet
-// Renamed to LoginInputComponent to avoid conflict if MinimalInput exists elsewhere
 const LoginInputComponent = ({
   id,
   name,
@@ -226,39 +233,37 @@ const LoginInputComponent = ({
   placeholder,
   icon,
   disabled = false,
-  autoComplete, // Added autoComplete
-  required = true, // Added required
+  autoComplete,
+  required = true,
 }: {
   id: string;
-  name: string; // Added name
+  name: string;
   type?: string;
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   placeholder: string;
   icon: React.ReactNode;
   disabled?: boolean;
-  autoComplete?: string; // Added autoComplete
-  required?: boolean; // Added required
+  autoComplete?: string;
+  required?: boolean;
 }) => (
-  // Styling from your provided Input component
   <div className="relative rounded-md shadow-sm">
-    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-      {icon}{" "}
-      {/* Icon color is handled by the icon itself from lucide if default */}
+    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+      {icon}
     </div>
     <input
       id={id}
-      name={name} // Use name prop
+      name={name}
       type={type}
       value={value}
       onChange={onChange}
       placeholder={placeholder}
-      disabled={disabled} // Pass disabled prop
-      required={required} // Pass required prop
-      autoComplete={autoComplete} // Pass autoComplete prop
+      disabled={disabled}
+      required={required}
+      autoComplete={autoComplete || "off"}
       className="appearance-none block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-colors"
     />
   </div>
 );
 
-export default LoginPage;
+// Removed the second export default LoginPage; as it was redundant.
