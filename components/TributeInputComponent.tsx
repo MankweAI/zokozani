@@ -183,7 +183,7 @@ const TributeInputComponent: React.FC<TributeInputComponentProps> = ({
                 absolute p-1.5 border border-slate-200 rounded-lg bg-white shadow-md animate-fade-in w-20 h-20 flex items-center justify-center
                 ${
                   isInputFocused
-                    ? "bottom-full left-4 mb-3 md:left-auto md:-top-20 md:left-4"
+                    ? "bottom-full left-4 mb-3 md:left-auto md:-top-20"
                     : "-top-20 left-4"
                 }
               `}

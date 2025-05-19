@@ -96,7 +96,6 @@ export default function LoginPage() {
         <form onSubmit={handleMockLogin} className="space-y-5">
           <LabeledInput
             id="fullName"
-            label="Your Full Name"
             name="fullName"
             icon={<User className="h-5 w-5 text-slate-400" />}
             value={fullName}
@@ -108,7 +107,6 @@ export default function LoginPage() {
 
           <LabeledInput
             id="password"
-            label="Password (any characters)"
             name="password"
             type="password"
             icon={<Lock className="h-5 w-5 text-slate-400" />}
@@ -121,9 +119,6 @@ export default function LoginPage() {
 
           <LabeledInput
             id="relationship"
-            label={`Your Relationship to ${
-              DECEASED_INFO_FOR_LOGIN.fullName.split(" ")[0]
-            }`}
             name="relationship"
             icon={<Users className="h-5 w-5 text-slate-400" />}
             value={relationship}
@@ -169,7 +164,6 @@ export default function LoginPage() {
 
 function LabeledInput({
   id,
-  label,
   name,
   type = "text",
   icon,
@@ -180,7 +174,6 @@ function LabeledInput({
   autoComplete,
 }: {
   id: string;
-  label: string;
   name: string;
   type?: string;
   icon: React.ReactNode;
@@ -196,7 +189,7 @@ function LabeledInput({
         htmlFor={id}
         className="block text-sm font-medium text-slate-700 mb-1.5"
       >
-        {label}
+        {/* {label} */}
       </label>
       <div className="relative rounded-md shadow-sm">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
