@@ -9,25 +9,7 @@ interface TributeFeedComponentProps {
 
 // Static mock data for Phase 2 layout (if you want the component to self-contain this for initial layout)
 // Or, you can remove this if you always pass tributes from app/page.tsx
-const MOCK_TRIBUTES_FOR_LAYOUT: TributeCardData[] = [
-  {
-    id: "layout1",
-    name: "A Loving Family Member (Layout)",
-    message:
-      "We will always remember your kindness and warmth. You brought so much joy to our lives. Rest peacefully.",
-    timestamp: "May 15, 2025, 10:00 AM",
-    hasCandle: true,
-    imageUrl: "/assets/images/portrait-placeholder.jpg",
-  },
-  {
-    id: "layout2",
-    name: "A Close Friend (Layout)",
-    message:
-      "Your laughter was infectious, and your wisdom guided many. You will be dearly missed. Thank you for everything.",
-    timestamp: "May 14, 2025, 3:30 PM",
-    hasCandle: false,
-  },
-];
+
 
 const TributeFeedComponent: React.FC<TributeFeedComponentProps> = ({
   tributes, // Tributes will be passed from app/page.tsx

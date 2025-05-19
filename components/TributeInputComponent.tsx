@@ -9,7 +9,6 @@ import {
   Flower,
   CheckCircle,
   ChevronDown, // For a close/done button
-  X, // Alternative for close
 } from "lucide-react";
 
 // ... (PREDEFINED_GIF_IMAGES, MAX_CHAR_LIMIT, types remain the same) ...
