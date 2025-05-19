@@ -1,0 +1,78 @@
+/* app/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-gradient-to-br from-stone-50 to-slate-100 text-slate-700 antialiased;
+  font-family: theme('fontFamily.sans'); /* Ensure 'Inter' is primary in tailwind.config.js */
+}
+
+/* Custom component class for larger tap targets */
+.tap-target-large {
+  @apply p-2.5 sm:p-3 min-h-[44px] min-w-[44px] flex items-center justify-center;
+}
+
+/* General fade-in for content and new tribute cards */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Animation for tab content transition */
+@keyframes fadeInContentSimple {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.tab-content-active {
+  /* This class will be applied to the active tab panel,
+     and the animation will run when it becomes visible if "hidden" attribute is toggled
+     or if the component is re-keyed. */
+  animation: fadeInContentSimple 0.4s ease-in-out forwards;
+}
+
+/* Placeholder for Lottie or other global animations if needed later */
+.animation-container-fixed-center {
+  width: 150px;
+  height: 150px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  pointer-events: none;
+}
+
+@layer utilities {
+  @keyframes candleFlickerEffect {
+    0%, 100% {
+      /* Use the RGBA values directly or ensure your setup processes theme() here */
+      /* These are examples; adjust values to match your tailwind.config.js if theme() isn't processed */
+      box-shadow: 0 0 15px 5px rgba(251, 191, 36, 0.4), /* amber-400 with ~40% opacity */
+                  0 0 25px 10px rgba(252, 211, 77, 0.3); /* amber-300 with ~30% opacity */
+      opacity: 1;
+    }
+    50% {
+      box-shadow: 0 0 18px 7px rgba(251, 191, 36, 0.45), /* Slightly varied intensity */
+                  0 0 30px 12px rgba(252, 211, 77, 0.35);
+      opacity: 0.95; /* Slight dip in opacity */
+    }
+  }
+
+  .animate-candle-flicker {
+    animation: candleFlickerEffect 3s infinite alternate ease-in-out;
+  }
+}
+
+@layer utilities {
+  .line-clamp-3 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+  } 
+}
