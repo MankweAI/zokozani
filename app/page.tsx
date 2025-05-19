@@ -19,7 +19,7 @@ import {
 import {
   Info,
   MessageSquareText,
-  // LogOut,
+  LogOut,
   CheckCircle,
   Heart, // Icon for Favorites tab
 } from "lucide-react";
@@ -336,21 +336,21 @@ export default function TributePage() {
     // await new Promise((resolve) => setTimeout(resolve, 500));
   };
 
-  // const handleSignOut = () => {
-  //   if (typeof window !== "undefined") {
-  //     if (process.env.NODE_ENV === "development") {
-  //       localStorage.removeItem(MOCK_USER_STORAGE_KEY);
-  //       setCurrentUser(null);
-  //       router.push("/login");
-  //     } else {
-  //       alert(
-  //         "Simulated sign-out. Session would typically expire or be managed server-side."
-  //       );
-  //       localStorage.removeItem(MOCK_USER_STORAGE_KEY);
-  //       router.push("/login");
-  //     }
-  //   }
-  // };
+  const handleSignOut = () => {
+    if (typeof window !== "undefined") {
+      if (process.env.NODE_ENV === "development") {
+        localStorage.removeItem(MOCK_USER_STORAGE_KEY);
+        setCurrentUser(null);
+        router.push("/login");
+      } else {
+        alert(
+          "Simulated sign-out. Session would typically expire or be managed server-side."
+        );
+        localStorage.removeItem(MOCK_USER_STORAGE_KEY);
+        router.push("/login");
+      }
+    }
+  };
 
   // const handleClearAllTributes = () => {
   //   if (typeof window !== "undefined") {
@@ -387,12 +387,7 @@ export default function TributePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-stone-50 to-slate-100">
-      <HeaderComponent
-        fullName={deceasedInfo.fullName}
-        lifespan={deceasedInfo.lifespan}
-        portraitUrl={deceasedInfo.portraitPlaceholderUrl}
-      />
-      {/* {currentUser?.isSignedIn && process.env.NODE_ENV === "development" && (
+      {currentUser?.isSignedIn && process.env.NODE_ENV === "development" && (
         <div className="flex-shrink-0 ml-2">
           <button
             onClick={handleSignOut}
@@ -403,7 +398,12 @@ export default function TributePage() {
             <span className="hidden sm:inline">Sign Out</span>
           </button>
         </div>
-      )} */}
+      )}
+      <HeaderComponent
+        fullName={deceasedInfo.fullName}
+        lifespan={deceasedInfo.lifespan}
+        portraitUrl={deceasedInfo.portraitPlaceholderUrl}
+      />
 
       <nav className="w-full border-b border-slate-200 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-xl mx-auto flex items-center justify-center px-2 sm:px-0">
@@ -439,7 +439,6 @@ export default function TributePage() {
       </nav>
 
       <div className="text-center px-4">
-
         {isInitialLoadComplete &&
           activeTab === "Tributes" &&
           tributes.length === 0 && (
