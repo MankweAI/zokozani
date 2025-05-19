@@ -30,6 +30,7 @@ const iconMap: { [key: string]: React.FC<LucideProps> } = {
 
 interface FavoriteItem {
   name: string;
+  id: string;
   secondaryText?: string;
   note?: string;
   // Optionally, you could add a songUrl here in phase 2, for now, simulate only

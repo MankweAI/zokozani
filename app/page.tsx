@@ -6,8 +6,6 @@ import { v4 as uuidv4 } from "uuid";
 import { useRouter } from "next/navigation";
 import HeaderComponent from "@/components/HeaderComponent";
 import TributeFeedComponent from "@/components/TributeFeedComponent";
-// Assuming TributeCardData interface (defined in TributeCardComponent.tsx)
-// now includes 'relationship: string;' as a required field.
 import { type TributeCardData } from "@/components/TributeCardComponent";
 import TributeInputComponent, {
   type NewTributeDataFromInput,
@@ -19,32 +17,27 @@ import {
 import {
   Info,
   MessageSquareText,
-  LogOut,
+  // LogOut icon is now used in HeaderComponent
   CheckCircle,
-  Heart, // Icon for Favorites tab
+  Heart,
 } from "lucide-react";
-import { MOCK_USER_STORAGE_KEY, type MockUserData } from "@/lib/constants";
+import { MOCK_USER_STORAGE_KEY, type MockUserData } from "@/lib/constants"; // Assuming constants are in lib
 
-
-// Import the Favorites component
 import FavoritesContentComponent, {
   type FavoritesData,
 } from "@/components/FavoritesContentComponent";
 
-// Updated TabName type (Gallery removed)
 type TabName = "Tributes" | "About" | "Favorites";
 
 const deceasedInfo = {
   fullName: "Lerato Nomvula Mnguni",
   lifespan: "1976 – 2025",
-  portraitPlaceholderUrl: "/assets/images/portrait.png", // Ensure this image exists
+  portraitPlaceholderUrl: "/assets/images/portrait.png",
 };
 
-// Favorites Data for Nomvula Mkhize
 const deceasedFavoritesData: FavoritesData = {
   pageTitleKey: "Celebrating Lerato's favorite things",
-  introTextKey:
-    "",
+  introTextKey: "", // Keeping this empty as per your last version
   categories: [
     {
       id: "music",
@@ -52,21 +45,25 @@ const deceasedFavoritesData: FavoritesData = {
       icon: "Music2",
       items: [
         {
+          id: "m1",
           name: "Bayede Nkosi",
           secondaryText: "Joyous Celebration",
           note: "A song that brought her to tears during worship.",
         },
         {
+          id: "m2",
           name: "Wena Uyingcwele",
           secondaryText: "Rebecca Malope",
           note: "Often played in the house on Sunday mornings.",
         },
         {
+          id: "m3",
           name: "Ke Na Le Modisa",
           secondaryText: "Solly Mahlangu",
           note: "A song she called her personal prayer.",
         },
         {
+          id: "m4",
           name: "Lihle Izulu",
           secondaryText: "Spirit of Praise",
           note: "Her comfort during difficult times.",
@@ -79,16 +76,19 @@ const deceasedFavoritesData: FavoritesData = {
       icon: "BookOpenText",
       items: [
         {
+          id: "b1",
           name: "The Bible",
           secondaryText: "King James Version",
           note: "Her daily source of strength and wisdom.",
         },
         {
+          id: "b2",
           name: "The Purpose Driven Life",
           secondaryText: "Rick Warren",
           note: "Shaped how she understood her calling.",
         },
         {
+          id: "b3",
           name: "Quiet Strength",
           secondaryText: "Tony Dungy",
           note: "She admired its message of faith and leadership.",
@@ -101,15 +101,18 @@ const deceasedFavoritesData: FavoritesData = {
       icon: "Clapperboard",
       items: [
         {
+          id: "v1",
           name: "The Color Purple",
           note: "Moved her deeply with its story of resilience and sisterhood.",
         },
         {
+          id: "v2",
           name: "Faith Like Potatoes",
           secondaryText: "South African Film",
           note: "She loved the message of faith against all odds.",
         },
         {
+          id: "v3",
           name: "Generations (Classic episodes)",
           secondaryText: "TV Show",
           note: "A nostalgic favourite from family evenings.",
@@ -122,24 +125,29 @@ const deceasedFavoritesData: FavoritesData = {
       icon: "Salad",
       items: [
         {
+          id: "f1",
           name: "Umngqusho",
           secondaryText: "Samp and Beans",
           note: "Her comfort food after church on Sundays.",
         },
         {
+          id: "f2",
           name: "Mogodu",
           secondaryText: "Traditional Tripe",
           note: "Often prepared for family gatherings.",
         },
         {
+          id: "f3",
           name: "Pumpkin with Cinnamon",
           secondaryText: "Sweet Traditional Side",
         },
         {
+          id: "f4",
           name: "Chakalaka",
           secondaryText: "Spicy Vegetable Relish",
         },
         {
+          id: "f5",
           name: "Homemade Ginger Biscuits",
           note: "A family favourite she baked with love.",
         },
@@ -151,16 +159,19 @@ const deceasedFavoritesData: FavoritesData = {
       icon: "UtensilsCrossed",
       items: [
         {
+          id: "r1",
           name: "Wimpy",
           secondaryText: "Tembisa",
           note: "A special treat with the kids after church.",
         },
         {
+          id: "r2",
           name: "Moyo",
           secondaryText: "Melrose Arch",
           note: "She enjoyed the cultural ambiance and music.",
         },
         {
+          id: "r3",
           name: "The Fish & Chip Co.",
           note: "Her go-to for quick seafood on Fridays.",
         },
@@ -172,14 +183,17 @@ const deceasedFavoritesData: FavoritesData = {
       icon: "MapPin",
       items: [
         {
+          id: "p1",
           name: "Kruger National Park",
           note: "A place of peace and connection with nature.",
         },
         {
+          id: "p2",
           name: "Durban Beachfront",
           note: "She loved the sea breeze and family picnics.",
         },
         {
+          id: "p3",
           name: "Church Retreat in Magaliesburg",
           note: "A place where she reconnected with God and herself.",
         },
@@ -188,9 +202,7 @@ const deceasedFavoritesData: FavoritesData = {
   ],
 };
 
-
 interface CurrentUser extends MockUserData {
-  // MockUserData requires relationship: string
   isSignedIn: boolean;
 }
 
@@ -200,7 +212,7 @@ interface AboutContentProps {
 }
 
 const AboutContent: React.FC<AboutContentProps> = ({ fullName, lifespan }) => {
-  const [] = lifespan
+  const [] = lifespan 
     .split("–")
     .map((year) => year.trim());
 
@@ -262,7 +274,6 @@ export default function TributePage() {
       if (storedUserData) {
         try {
           const parsedData: MockUserData = JSON.parse(storedUserData);
-          // Ensure relationship is present, as it's required by MockUserData
           if (parsedData.fullName && parsedData.relationship) {
             setCurrentUser({ ...parsedData, isSignedIn: true });
             const loadedTributes = loadTributesFromLocalStorage(
@@ -270,7 +281,6 @@ export default function TributePage() {
             );
             setTributes(loadedTributes);
           } else {
-            // Data is incomplete/corrupted if relationship is missing
             localStorage.removeItem(MOCK_USER_STORAGE_KEY);
             router.replace("/login");
             return;
@@ -297,13 +307,12 @@ export default function TributePage() {
     if (isInitialLoadComplete && currentUser?.isSignedIn) {
       saveTributesToLocalStorage(deceasedInfo.fullName, tributes);
     }
-  }, [tributes, isInitialLoadComplete, currentUser]);
+  }, [tributes, currentUser, isInitialLoadComplete]); // Added deceasedInfo.fullName from dependency array as it might not be stable if defined inside component
 
   const handleTabClick = (tabName: TabName) => {
     setActiveTab(tabName);
   };
 
-  // MODIFIED handleAddTribute to include relationship
   const handleAddTribute = async (
     data: NewTributeDataFromInput
   ): Promise<void> => {
@@ -313,60 +322,55 @@ export default function TributePage() {
       !currentUser.relationship
     ) {
       alert(
-        "User information is incomplete or you are not signed in. Please sign in again to post a tribute."
+        "User information is incomplete. Please sign in again to post a tribute."
       );
       router.push("/login");
       return;
     }
-
     const newTribute: TributeCardData = {
       id: uuidv4(),
       name: currentUser.fullName,
-      relationship: currentUser.relationship, // Now correctly adding the required relationship
+      relationship: currentUser.relationship,
       message: data.message,
       timestamp: Date.now(),
       attachmentType: data.attachmentType,
       attachmentValue: data.attachmentValue,
     };
-
     setTributes((prevTributes) => [newTribute, ...prevTributes]);
     setShowPostSuccessToast(true);
     setTimeout(() => setShowPostSuccessToast(false), 3000);
-    // Simulate submission delay if needed, or remove if onAddTribute in props is async
-    // await new Promise((resolve) => setTimeout(resolve, 500));
   };
 
   const handleSignOut = () => {
     if (typeof window !== "undefined") {
       if (process.env.NODE_ENV === "development") {
         localStorage.removeItem(MOCK_USER_STORAGE_KEY);
-        setCurrentUser(null);
-        router.push("/login");
+        setCurrentUser(null); // Clear current user state
+        router.push("/login"); // Redirect to login
       } else {
         alert(
           "Simulated sign-out. Session would typically expire or be managed server-side."
         );
         localStorage.removeItem(MOCK_USER_STORAGE_KEY);
+        setCurrentUser(null);
         router.push("/login");
       }
     }
   };
 
-  // const handleClearAllTributes = () => {
-  //   if (typeof window !== "undefined") {
-  //     if (
-  //       window.confirm(
-  //         "DEVELOPMENT: Are you sure you want to delete ALL tributes for this page? This cannot be undone."
-  //       )
-  //     ) {
-  //       saveTributesToLocalStorage(deceasedInfo.fullName, []);
-  //       setTributes([]);
-  //       alert(
-  //         "All tributes for this page have been cleared from local storage."
-  //       );
-  //     }
-  //   }
-  // };
+  const handleClearAllTributes = () => {
+    if (typeof window !== "undefined") {
+      if (
+        window.confirm(
+          "DEVELOPMENT: Are you sure you want to delete ALL tributes?"
+        )
+      ) {
+        saveTributesToLocalStorage(deceasedInfo.fullName, []);
+        setTributes([]);
+        alert("All tributes have been cleared from local storage.");
+      }
+    }
+  };
 
   if (isLoadingPage) {
     return (
@@ -378,6 +382,8 @@ export default function TributePage() {
   }
 
   if (!currentUser?.isSignedIn) {
+    // This should ideally not be reached if useEffect correctly redirects.
+    // It can serve as a fallback.
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-slate-500">Redirecting to login...</p>
@@ -387,23 +393,19 @@ export default function TributePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-stone-50 to-slate-100">
-      {currentUser?.isSignedIn && process.env.NODE_ENV === "development" && (
-        <div className="flex-shrink-0 ml-2">
-          <button
-            onClick={handleSignOut}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
-            title={`Sign out ${currentUser.fullName} (Dev Only)`}
-          >
-            <LogOut size={14} />
-            <span className="hidden sm:inline">Sign Out</span>
-          </button>
-        </div>
-      )}
       <HeaderComponent
         fullName={deceasedInfo.fullName}
         lifespan={deceasedInfo.lifespan}
         portraitUrl={deceasedInfo.portraitPlaceholderUrl}
+        currentUser={{
+          // Pass simplified currentUser info
+          fullName: currentUser?.fullName,
+          isSignedIn: currentUser?.isSignedIn || false,
+        }}
+        onSignOut={handleSignOut}
       />
+
+      {/* Removed the old LogOut button previously rendered here */}
 
       <nav className="w-full border-b border-slate-200 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-xl mx-auto flex items-center justify-center px-2 sm:px-0">
@@ -438,7 +440,7 @@ export default function TributePage() {
         </div>
       </nav>
 
-      <div className="text-center px-4">
+      <div className="text-center px-4 py-1">
         {isInitialLoadComplete &&
           activeTab === "Tributes" &&
           tributes.length === 0 && (
@@ -498,7 +500,7 @@ export default function TributePage() {
         </div>
       )}
 
-      {/* {process.env.NODE_ENV === "development" && currentUser?.isSignedIn && (
+      {process.env.NODE_ENV === "development" && currentUser?.isSignedIn && (
         <div className="text-center py-6">
           <button
             onClick={handleClearAllTributes}
@@ -507,7 +509,7 @@ export default function TributePage() {
             Clear All Tributes (Dev Only)
           </button>
         </div>
-      )} */}
+      )}
     </div>
   );
 }

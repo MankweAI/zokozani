@@ -148,10 +148,6 @@ export default function LoginPage() {
             )}
           </button>
         </form>
-
-        <p className="text-center text-xs text-slate-500 pt-4">
-          By signing in, you agree to share tributes respectfully.
-        </p>
       </div>
 
       <footer className="mt-8 text-xs text-slate-400 text-center">
