@@ -23,7 +23,8 @@ import {
   CheckCircle,
   Heart, // Icon for Favorites tab
 } from "lucide-react";
-import { MOCK_USER_STORAGE_KEY, type MockUserData } from "./login/page";
+import { MOCK_USER_STORAGE_KEY, type MockUserData } from "@/lib/constants";
+
 
 // Import the Favorites component
 import FavoritesContentComponent, {
