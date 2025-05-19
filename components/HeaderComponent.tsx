@@ -29,8 +29,7 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
       <div className="max-w-xl mx-auto flex flex-col items-center space-y-4 relative">
         {/* Logout Button - positioned top-right of this container */}
         {currentUser?.isSignedIn &&
-          onSignOut &&
-          process.env.NODE_ENV === "development" && (
+          onSignOut && (
             <div className="absolute top-0 right-0 p-1 sm:p-0"> {/* Adjust padding as needed */}
               <button
                 onClick={onSignOut}
