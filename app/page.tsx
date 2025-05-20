@@ -35,6 +35,48 @@ const deceasedInfo = {
   portraitPlaceholderUrl: "/assets/images/portrait.png",
 };
 
+// Define STATIC_TRIBUTES array
+const STATIC_TRIBUTES: TributeCardData[] = [
+  {
+    id: uuidv4(),
+    name: "Rakgadi Sarah",
+    relationship: "Aunt",
+    message:
+      "Lerato, your kindness touched so many. We will miss your gentle spirit and warm smile. Rest in peace, dear friend. Your legacy of love will live on in all the lives you touched.",
+    timestamp: new Date("2025-01-15T10:00:00Z").getTime(), // Older timestamp
+  },
+  {
+    id: uuidv4(),
+    name: "Pastor Makola",
+    relationship: "Pastor",
+    message:
+      "A true woman of faith. Lerato's dedication to the church and her unwavering belief were an inspiration to us all. She is now with the Lord, her spirit shining brightly.",
+    timestamp: new Date("2025-01-16T14:30:00Z").getTime(), // Older timestamp
+    attachmentType: "picture",
+    attachmentValue: "/assets/images/gifs/preset-12.gif",
+  },
+  {
+    id: uuidv4(),
+    name: "Thabo Mnguni",
+    relationship: "Husband",
+    message:
+      "My dearest Lerato, you were the light of our home and the peace in my heart. You loved deeply and served our family with quiet strength. I will miss y",
+    timestamp: new Date("2025-01-17T09:15:00Z").getTime(),
+    attachmentType: "picture",
+    attachmentValue: "/assets/images/gifs/preset-04.gif",
+  },
+  {
+    id: uuidv4(),
+    name: "Naledi Mnguni",
+    relationship: "Daughter",
+    message:
+      "Mommy, I miss your smile, your warm hugs, and the way you always knew the right words. You taught me how to be kind, how to have faith, and how to love",
+    timestamp: new Date("2025-01-17T09:15:00Z").getTime(),
+    attachmentType: "picture",
+    attachmentValue: "/assets/images/gifs/preset-07.gif",
+  },
+];
+
 const deceasedFavoritesData: FavoritesData = {
   pageTitleKey: "Celebrating Lerato's favorite things",
   introTextKey: "", // Keeping this empty as per your last version
@@ -212,9 +254,7 @@ interface AboutContentProps {
 }
 
 const AboutContent: React.FC<AboutContentProps> = ({ fullName, lifespan }) => {
-  const [] = lifespan 
-    .split("–")
-    .map((year) => year.trim());
+  const [] = lifespan.split("–").map((year) => year.trim());
 
   return (
     <div className="bg-white rounded-xl shadow-candle-light p-6 md:p-8 max-w-xl mx-auto animate-fade-in">
@@ -276,11 +316,26 @@ export default function TributePage() {
           const parsedData: MockUserData = JSON.parse(storedUserData);
           if (parsedData.fullName && parsedData.relationship) {
             setCurrentUser({ ...parsedData, isSignedIn: true });
-            const loadedTributes = loadTributesFromLocalStorage(
+
+            // Load tributes from local storage
+            const loadedTributesFromStorage = loadTributesFromLocalStorage(
               deceasedInfo.fullName
             );
-            setTributes(loadedTributes);
+
+            // Combine static tributes with those from local storage
+            // Filter out any from local storage if their IDs already exist in STATIC_TRIBUTES
+            const combinedTributes = [
+              ...STATIC_TRIBUTES,
+              ...loadedTributesFromStorage.filter(
+                (lt) => !STATIC_TRIBUTES.find((st) => st.id === lt.id)
+              ),
+            ];
+
+            // Sort all tributes by timestamp, newest first
+            combinedTributes.sort((a, b) => b.timestamp - a.timestamp);
+            setTributes(combinedTributes);
           } else {
+            // Invalid user data structure
             localStorage.removeItem(MOCK_USER_STORAGE_KEY);
             router.replace("/login");
             return;
@@ -295,6 +350,10 @@ export default function TributePage() {
           return;
         }
       } else {
+        // No user data found, redirect to login
+        // If you want to display static tributes even when logged out,
+        // you could set them here before redirecting or instead of redirecting.
+        // For now, maintaining original behavior of redirecting.
         router.replace("/login");
         return;
       }
@@ -304,10 +363,26 @@ export default function TributePage() {
   }, [router]);
 
   useEffect(() => {
+    // Save tributes to local storage, but only those not part of STATIC_TRIBUTES
+    // to avoid re-saving the static ones. Or, save all if merging logic is simple.
+    // For simplicity here, we'll save all current tributes. If STATIC_TRIBUTES
+    // are always prepended on load, they won't be duplicated in local storage
+    // unless their IDs change or they are modified and re-added by user actions.
+    // A more robust approach might be to save only non-static tributes.
     if (isInitialLoadComplete && currentUser?.isSignedIn) {
-      saveTributesToLocalStorage(deceasedInfo.fullName, tributes);
+      // Filter out static tributes before saving, to only save user-added ones
+      const tributesToSave = tributes.filter(
+        (t) =>
+          !STATIC_TRIBUTES.find(
+            (st) =>
+              st.id === t.id &&
+              st.timestamp === t.timestamp &&
+              st.message === t.message
+          ) // More robust check
+      );
+      saveTributesToLocalStorage(deceasedInfo.fullName, tributesToSave);
     }
-  }, [tributes, currentUser, isInitialLoadComplete]); // Added deceasedInfo.fullName from dependency array as it might not be stable if defined inside component
+  }, [tributes, currentUser, isInitialLoadComplete]);
 
   const handleTabClick = (tabName: TabName) => {
     setActiveTab(tabName);
@@ -336,7 +411,10 @@ export default function TributePage() {
       attachmentType: data.attachmentType,
       attachmentValue: data.attachmentValue,
     };
-    setTributes((prevTributes) => [newTribute, ...prevTributes]);
+    // Add new tribute and re-sort
+    setTributes((prevTributes) =>
+      [newTribute, ...prevTributes].sort((a, b) => b.timestamp - a.timestamp)
+    );
     setShowPostSuccessToast(true);
     setTimeout(() => setShowPostSuccessToast(false), 3000);
   };
@@ -345,8 +423,8 @@ export default function TributePage() {
     if (typeof window !== "undefined") {
       if (process.env.NODE_ENV === "development") {
         localStorage.removeItem(MOCK_USER_STORAGE_KEY);
-        setCurrentUser(null); // Clear current user state
-        router.push("/login"); // Redirect to login
+        setCurrentUser(null);
+        router.push("/login");
       } else {
         alert(
           "Simulated sign-out. Session would typically expire or be managed server-side."
@@ -362,12 +440,19 @@ export default function TributePage() {
     if (typeof window !== "undefined") {
       if (
         window.confirm(
-          "DEVELOPMENT: Are you sure you want to delete ALL tributes?"
+          "DEVELOPMENT: Are you sure you want to delete ALL tributes from local storage (static tributes will remain on next load)?"
         )
       ) {
-        saveTributesToLocalStorage(deceasedInfo.fullName, []);
-        setTributes([]);
-        alert("All tributes have been cleared from local storage.");
+        saveTributesToLocalStorage(deceasedInfo.fullName, []); // Clear local storage
+        // Reload with static tributes + anything newly added if app were more complex
+        // For this setup, effectively resets to static + any newly added that haven't been filtered out by save logic
+        const justStaticTributes = [...STATIC_TRIBUTES].sort(
+          (a, b) => b.timestamp - a.timestamp
+        );
+        setTributes(justStaticTributes);
+        alert(
+          "User-added tributes have been cleared from local storage. Static tributes are re-shown."
+        );
       }
     }
   };
@@ -398,14 +483,11 @@ export default function TributePage() {
         lifespan={deceasedInfo.lifespan}
         portraitUrl={deceasedInfo.portraitPlaceholderUrl}
         currentUser={{
-          // Pass simplified currentUser info
           fullName: currentUser?.fullName,
           isSignedIn: currentUser?.isSignedIn || false,
         }}
         onSignOut={handleSignOut}
       />
-
-      {/* Removed the old LogOut button previously rendered here */}
 
       <nav className="w-full border-b border-slate-200 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-xl mx-auto flex items-center justify-center px-2 sm:px-0">
@@ -443,9 +525,10 @@ export default function TributePage() {
       <div className="text-center px-4 py-1">
         {isInitialLoadComplete &&
           activeTab === "Tributes" &&
-          tributes.length === 0 && (
+          tributes.length === 0 && ( // This condition might need adjustment if static tributes always exist
             <p className="text-sm text-slate-500 animate-fade-in mt-1">
-              Be the first to share a memory.
+              Be the first to share a memory.{" "}
+              {/* Or "No user tributes yet." if static ones are present */}
             </p>
           )}
       </div>
@@ -506,7 +589,7 @@ export default function TributePage() {
             onClick={handleClearAllTributes}
             className="px-4 py-2 bg-red-100 text-red-700 text-xs rounded-md hover:bg-red-200 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
           >
-            Clear All Tributes (Dev Only)
+            Clear User Tributes (Dev Only)
           </button>
         </div>
       )}

@@ -88,9 +88,6 @@ export default function LoginPage() {
           <h1 className="text-2xl font-semibold text-slate-800">
             {DECEASED_INFO_FOR_LOGIN.fullName}
           </h1>
-          <p className="text-xs text-slate-400">
-            Please sign in to share your tribute.
-          </p>
         </div>
 
         <form onSubmit={handleMockLogin} className="space-y-5">
@@ -143,7 +140,7 @@ export default function LoginPage() {
             ) : (
               <>
                 <LogInIcon className="h-5 w-5 mr-2" />
-                Access Tribute Wall
+                Enter
               </>
             )}
           </button>
