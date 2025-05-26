@@ -15,7 +15,7 @@ import {
   loadTributesFromLocalStorage,
   saveTributesToLocalStorage,
 } from "@/lib/localStorageUtils";
-import { HelpCircle } from "lucide-react";
+import { Cross } from "lucide-react";
 // MOCK_USER_STORAGE_KEY and MockUserData are no longer needed here
 // import { MOCK_USER_STORAGE_KEY, type MockUserData } from "@/lib/constants";
 
@@ -132,17 +132,36 @@ export default function TributePage() {
       </main>
 
       {currentView === "form" && (
-        <footer className="py-6 border-t border-slate-200 bg-slate-50 text-center">
-          <button
-            onClick={() => setIsFuneralModalOpen(true)}
-            className="text-sm text-slate-600 hover:text-amber-700 font-medium transition-colors group flex items-center justify-center mx-auto"
-          >
-            <HelpCircle
-              size={16}
-              className="mr-1.5 text-slate-500 group-hover:text-amber-600 transition-colors"
-            />
-            Want to know more about our services?
-          </button>
+        <footer className="py-8 border-t border-slate-200/80 bg-white text-center">
+          {" "}
+          {/* Changed bg to white, slightly more padding */}
+          <div className="max-w-lg mx-auto px-4">
+            {" "}
+            {/* Content wrapper */}
+            <h4 className="text-xl font-playfair text-slate-700 mb-2">
+              {" "}
+              {/* Using Playfair for elegance, slightly larger */}
+              {deceasedInfo.funeralHomeName}
+            </h4>
+            <p className="text-sm text-slate-500 mb-5 max-w-sm mx-auto">
+              {" "}
+              {/* Added a brief tagline */}
+              Offering compassionate support and professional guidance when you
+              need it most.
+            </p>
+            <button
+              onClick={() => setIsFuneralModalOpen(true)}
+              className="text-sm text-amber-700 hover:text-amber-800 font-semibold transition-colors group flex items-center justify-center mx-auto 
+                       px-6 py-2.5 border-2 border-amber-500/40 hover:border-amber-500 rounded-lg hover:bg-amber-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              // Styled as a more prominent outline button
+            >
+              <Cross
+                size={16} // Adjusted size to fit button style
+                className="mr-2 text-amber-600 group-hover:text-amber-700 transition-colors"
+              />
+              Request a Callback
+            </button>
+          </div>
         </footer>
       )}
 
@@ -150,7 +169,7 @@ export default function TributePage() {
         isOpen={isFuneralModalOpen}
         onClose={() => setIsFuneralModalOpen(false)}
         funeralHomeName={deceasedInfo.funeralHomeName}
-        defaultUserName={""} // No logged-in user to prefill name
+        defaultUserName={""}
       />
     </div>
   );
