@@ -1,111 +1,89 @@
-// app/page.tsx (Modified to include subtle FuneralHomeCTA and manage PostPaymentConfirmation)
+// app/page.tsx (Auth/Login Logic Removed)
 "use client";
 
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { useRouter } from "next/navigation";
+// useRouter is not strictly needed anymore unless for other navigation
+// import { useRouter } from "next/navigation";
 import HeaderComponent from "@/components/HeaderComponent";
 import TributeInputComponent, {
   type NewTributeDataFromInput,
-} from "@/components/TributeInputComponent"; // This is TributeInputComponent_V3_Ecommerce
+} from "@/components/TributeInputComponent";
 import PostPaymentConfirmationComponent from "@/components/PostPaymentConfirmationComponent";
-import FuneralHomeCTAComponent from "@/components/FuneralHomeCTAComponent"; // Import new component
+import FuneralHomeCTAComponent from "@/components/FuneralHomeCTAComponent";
 import {
-  loadTributesFromLocalStorage, // Assuming not used directly for display on this simplified page
-  saveTributesToLocalStorage, // For saving the submitted tribute
+  loadTributesFromLocalStorage,
+  saveTributesToLocalStorage,
 } from "@/lib/localStorageUtils";
-import { HelpCircle } from "lucide-react"; // HelpCircle for subtle CTA
-import { MOCK_USER_STORAGE_KEY, type MockUserData } from "@/lib/constants";
+import { HelpCircle } from "lucide-react";
+// MOCK_USER_STORAGE_KEY and MockUserData are no longer needed here
+// import { MOCK_USER_STORAGE_KEY, type MockUserData } from "@/lib/constants";
 
 const deceasedInfo = {
   id: "lerato-nomvula-mnguni-memorial",
   fullName: "Lerato Nomvula Mnguni",
   lifespan: "1976 – 2025",
   portraitPlaceholderUrl: "/assets/images/portrait.png",
-  coverImageUrl: "/assets/images/default-cover-placeholder.jpg", // Ensure this image exists
-  funeralHomeName: "Remembrance Funerals", // Example
+  coverImageUrl: "/assets/images/default-cover-placeholder.jpg",
+  funeralHomeName: "Remembrance Funerals",
 };
 
-interface CurrentUser extends MockUserData {
-  isSignedIn: boolean;
-}
 
 type PageView = "form" | "confirmation";
 
 export default function TributePage() {
-  // Removed 'tributes' state for simplicity on this input-focused page.
-  // If a feed is needed, re-add 'tributes' state and related logic.
-  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
-  const [isLoadingPage, setIsLoadingPage] = useState(true);
-  const router = useRouter();
+  // Removed currentUser state
+  const [isLoadingPage, setIsLoadingPage] = useState(true); // Basic loading state
+  // const router = useRouter(); // Not used for login redirects anymore
 
   const [currentView, setCurrentView] = useState<PageView>("form");
   const [confirmationData, setConfirmationData] = useState<{
     deceasedName: string;
     deceasedId: string;
-    userName: string;
+    userName: string; // This comes from the form now
   } | null>(null);
 
   const [isFuneralModalOpen, setIsFuneralModalOpen] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const storedUserData = localStorage.getItem(MOCK_USER_STORAGE_KEY);
-      if (storedUserData) {
-        try {
-          const parsedData: MockUserData = JSON.parse(storedUserData);
-          // For this page, we primarily need to know if a user is "logged in"
-          // to authorize tribute submission. TributeInputComponent handles sender name/relationship.
-          setCurrentUser({ ...parsedData, isSignedIn: true });
-        } catch {
-          localStorage.removeItem(MOCK_USER_STORAGE_KEY);
-          router.replace("/login");
-          return;
-        }
-      } else {
-        router.replace("/login");
-        return;
-      }
-      setIsLoadingPage(false);
-    }
-  }, [router]);
+    // Simulate initial page setup if needed, or just set loading to false
+    // No auth check needed here anymore
+    setIsLoadingPage(false);
+  }, []);
 
   const handleAddTribute = async (
     data: NewTributeDataFromInput // Expects { senderName, senderRelationship, message, flowerId }
   ): Promise<void> => {
-    if (!currentUser?.isSignedIn) {
-      alert("User information incomplete. Please sign in again.");
-      router.push("/login");
-      return;
-    }
+    // No currentUser check needed here anymore
+    // The TributeInputComponent now collects senderName and senderRelationship
 
     const newTributeToStore = {
-      // Simplified structure for local storage if needed
       id: uuidv4(),
-      name: data.senderName,
-      relationship: data.senderRelationship,
+      name: data.senderName, // Directly from form data
+      relationship: data.senderRelationship, // Directly from form data
       message: data.message,
-      flowerId: data.flowerId, // Store flowerId
+      flowerId: data.flowerId,
       timestamp: Date.now(),
     };
 
     // Simulate saving: Load existing, add new, save back
+    // This part remains to store tributes locally if desired,
+    // accessible by anyone visiting the page.
     const existingTributes = loadTributesFromLocalStorage(
       deceasedInfo.fullName
     );
     const updatedTributes = [newTributeToStore, ...existingTributes];
-    updatedTributes.sort((a, b) => b.timestamp - a.timestamp); // Keep sorted if used elsewhere
+    updatedTributes.sort((a, b) => b.timestamp - a.timestamp);
     saveTributesToLocalStorage(deceasedInfo.fullName, updatedTributes);
     console.log("Tribute saved:", newTributeToStore);
 
     setConfirmationData({
       deceasedName: deceasedInfo.fullName,
       deceasedId: deceasedInfo.id,
-      userName: data.senderName,
+      userName: data.senderName, // Use senderName from the form data
     });
     setCurrentView("confirmation");
   };
-
 
   const handleConfirmationDone = () => {
     setCurrentView("form");
@@ -121,37 +99,23 @@ export default function TributePage() {
     );
   }
 
-  if (!currentUser?.isSignedIn && typeof window !== "undefined") {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-slate-500">Redirecting to login...</p>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-100 to-stone-100 text-slate-800 font-sans">
       <HeaderComponent
         fullName={deceasedInfo.fullName}
         lifespan={deceasedInfo.lifespan}
         portraitUrl={deceasedInfo.portraitPlaceholderUrl}
-        currentUser={{
-          fullName: currentUser?.fullName,
-          isSignedIn: currentUser?.isSignedIn || false,
-        }}
+        currentUser={null} // No current user to pass for sign out
+        // onSignOut prop is removed as there's no sign-out functionality
       />
 
       <main className="flex-grow w-full relative">
-        {" "}
-        {/* Added relative for potential fixed CTA parent */}
         {currentView === "form" && (
           <div className="animate-fade-in pt-0 md:pt-2 pb-8">
-            {" "}
-            {/* Adjusted padding */}
             <TributeInputComponent
               onAddTribute={handleAddTribute}
               deceasedName={deceasedInfo.fullName}
-              deceasedId={deceasedInfo.id} // Pass deceasedId
+              deceasedId={deceasedInfo.id}
             />
           </div>
         )}
@@ -167,7 +131,6 @@ export default function TributePage() {
         )}
       </main>
 
-      {/* Subtle Funeral Home CTA - always available on this page if view is 'form' */}
       {currentView === "form" && (
         <footer className="py-6 border-t border-slate-200 bg-slate-50 text-center">
           <button
@@ -187,7 +150,7 @@ export default function TributePage() {
         isOpen={isFuneralModalOpen}
         onClose={() => setIsFuneralModalOpen(false)}
         funeralHomeName={deceasedInfo.funeralHomeName}
-        defaultUserName={currentUser?.fullName || ""} // Prefill with logged-in user's name if available
+        defaultUserName={""} // No logged-in user to prefill name
       />
     </div>
   );
