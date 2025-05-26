@@ -1,401 +1,402 @@
 // components/TributeInputComponent.tsx
+// This version integrates the PaymentEmulationModal and PostPaymentConfirmationComponent.
 "use client";
 
-import { useState, useRef, type FormEvent, useEffect } from "react";
+import { useState } from "react";
 import Image from "next/image";
-import {
-  Send,
-  XCircle,
-  Flower,
-  CheckCircle,
-  ChevronDown, // For a close/done button
-} from "lucide-react";
+import { CheckCircleIcon } from "@heroicons/react/20/solid";
+import PaymentEmulationModal from "./PaymentEmulationModal"; // Assumed in the same directory
+import PostPaymentConfirmationComponent from "./PostPaymentConfirmationComponent"; // Import the new component
 
-// ... (PREDEFINED_GIF_IMAGES, MAX_CHAR_LIMIT, types remain the same) ...
-const PREDEFINED_GIF_IMAGES = Array.from({ length: 10 }, (_, i) => ({
-  id: `mock_gif_${i + 1}`,
-  src: `/assets/images/gifs/preset-${String(i + 1).padStart(2, "0")}.gif`,
-  alt: `Symbolic GIF ${i + 1}`,
-}));
-const MAX_CHAR_LIMIT = 150;
-export type AttachmentType = "picture" | null;
 export interface NewTributeDataFromInput {
+  senderName: string;
+  senderRelationship: string;
   message: string;
-  attachmentType: AttachmentType;
-  attachmentValue: string | null;
+  flowerId: string;
 }
+
+const flowerOptions = [
+  {
+    id: "lily", // Kept id
+    label: "White Lilies",
+    price: 80, // Updated price as requested
+    description: "Symbolizing purity, sympathy, and renewal.", // Slightly refined description
+    imageUrl: "/assets/images/flower-lily.jpg",
+  },
+  {
+    id: "carnations", // Kept id
+    label: "Pink Carnations",
+    price: 140, // Positioned between Lilies and Orchids
+    description: "Representing remembrance and heartfelt gratitude.", // Slightly refined description
+    imageUrl: "/assets/images/flower-carnation.jpg",
+  },
+  {
+    id: "orchid", // Kept id
+    label: "White Orchid",
+    price: 400, // Positioned as a premium option below Roses
+    description: "Signifying eternal love and delicate beauty.", // Slightly refined description
+    imageUrl: "/assets/images/flower-orchid.jpg",
+  },
+  {
+    id: "rose", // Kept id
+    label: "Red Roses",
+    price: 1000, // Updated price as requested
+    description: "Expressing deep love, respect, and courage.", // Slightly refined description
+    imageUrl: "/assets/images/flower-rose.jpg",
+  },
+];
+
 interface TributeInputComponentProps {
   onAddTribute: (data: NewTributeDataFromInput) => Promise<void>;
+  deceasedName?: string;
+  deceasedId?: string; // Added to pass to PostPaymentConfirmationComponent
+  // Add other props PostPaymentConfirmationComponent might need if they come from TributeInputComponent's parent
+  // e.g., funeralHomeName, siteBaseUrl, or let PostPaymentConfirmationComponent use its defaults
 }
+
+type ComponentView = "form" | "confirmation";
 
 const TributeInputComponent: React.FC<TributeInputComponentProps> = ({
   onAddTribute,
+  deceasedName = "the departed", // Default value
+  deceasedId = "default-deceased-id", // Default or ensure passed from parent
 }) => {
-  const [message, setMessage] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<
-    "idle" | "posting" | "posted"
-  >("idle");
-  const [attachmentType, setAttachmentType] = useState<AttachmentType>(null);
-  const [attachmentValue, setAttachmentValue] = useState<string | null>(null);
-  const [attachmentAlt, setAttachmentAlt] = useState<string | null>(null);
-  const [showGifPicker, setShowGifPicker] = useState(false);
-  const gifPickerRef = useRef<HTMLDivElement>(null);
-  const formRef = useRef<HTMLFormElement>(null); // Ref for the form
+  const [senderName, setSenderName] = useState("Mankwe Mokgabudi"); // Default for testing
+  const [senderRelationship, setSenderRelationship] = useState("Colleague"); // Default for testing
+  const [message, setMessage] = useState(
+    "In loving memory of a wonderful colleague."
+  ); // Default for testing
+  const [selectedFlowerId, setSelectedFlowerId] = useState<string | null>(null);
 
-  // New state for focused/expanded input
-  const [isInputFocused, setIsInputFocused] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [isProcessingTribute, setIsProcessingTribute] = useState(false);
+  const [error, setError] = useState("");
+  // submitSuccess now indicates success of the whole flow including payment, before showing confirmation
+  const [formSubmitAttempted, setFormSubmitAttempted] = useState(false);
 
-  const handleSelectGif = (imageUrl: string, imageAlt: string) => {
-    setAttachmentType("picture");
-    setAttachmentValue(imageUrl);
-    setAttachmentAlt(imageAlt);
-    setShowGifPicker(false);
-    // Keep input focused if it was
-    textareaRef.current?.focus();
-  };
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [currentTributeDataForPayment, setCurrentTributeDataForPayment] =
+    useState<NewTributeDataFromInput | null>(null);
 
-  const handleRemoveAttachment = () => {
-    setAttachmentType(null);
-    setAttachmentValue(null);
-    setAttachmentAlt(null);
-    setShowGifPicker(false);
-    // Keep input focused if it was
-    textareaRef.current?.focus();
-  };
+  const [currentView, setCurrentView] = useState<ComponentView>("form");
 
-  // Click outside GIF picker
-  useEffect(() => {
-    const handleClickOutsideGifPicker = (event: MouseEvent) => {
-      if (
-        showGifPicker &&
-        gifPickerRef.current &&
-        !gifPickerRef.current.contains(event.target as Node)
-      ) {
-        setShowGifPicker(false);
-      }
-    };
-    if (showGifPicker) {
-      document.addEventListener("mousedown", handleClickOutsideGifPicker);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutsideGifPicker);
-    };
-  }, [showGifPicker]);
+  const selectedFlowerDetails = flowerOptions.find(
+    (f) => f.id === selectedFlowerId
+  );
 
-  // Click outside main input area when focused (for mobile overlay)
-  // This is simplified; a robust outside click for a modal-like element can be complex
-  // For now, we'll rely on a "Done" or "Close" button for the expanded mobile view.
+  const canProceedToPayment =
+    selectedFlowerId &&
+    senderName.trim() &&
+    senderRelationship.trim() &&
+    message.trim();
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (isSubmitting || submitStatus === "posted") return;
-    if (!message.trim() && !attachmentValue) {
-      alert("Please leave a tribute message or add a symbolic GIF.");
+  const handleSubmit = () => {
+    setError("");
+    setFormSubmitAttempted(true); // Mark that a submit attempt was made
+
+    if (!selectedFlowerId) {
+      setError("Please select a flower to continue.");
       return;
     }
-    setIsSubmitting(true);
-    setSubmitStatus("posting");
+    if (!senderName.trim()) {
+      setError("Please enter your name.");
+      return;
+    }
+    if (!senderRelationship.trim()) {
+      setError("Please enter your relationship to the deceased.");
+      return;
+    }
+    if (!message.trim()) {
+      setError("Please write a message for your tribute.");
+      return;
+    }
+
+    const dataForPayment: NewTributeDataFromInput = {
+      senderName: senderName.trim(),
+      senderRelationship: senderRelationship.trim(),
+      message: message.trim(),
+      flowerId: selectedFlowerId,
+    };
+    setCurrentTributeDataForPayment(dataForPayment);
+    setShowPaymentModal(true);
+  };
+
+  const handlePaymentSuccessAndFinalizeTribute = async (
+    paidTributeData: NewTributeDataFromInput
+  ) => {
+    setIsProcessingTribute(true);
+    setError("");
     try {
-      await onAddTribute({
-        message: message.trim(),
-        attachmentType,
-        attachmentValue,
-      });
-      setSubmitStatus("posted");
-      setTimeout(() => {
-        setMessage("");
-        handleRemoveAttachment(); // This also closes GIF picker
-        setSubmitStatus("idle");
-        setIsInputFocused(false); // Collapse input after successful submission
-      }, 2000);
-    } catch (error) {
-      console.error("Submission error in component:", error);
-      setSubmitStatus("idle");
-      // setIsInputFocused(false); // Optionally collapse on error too
-      alert("There was an error posting your tribute. Please try again.");
+      await onAddTribute(paidTributeData);
+
+      // Don't reset form fields here yet, as they are needed for the confirmation screen's props (userName)
+      // Form will be effectively "gone" when view changes. Reset on returning to form.
+
+      setShowPaymentModal(false);
+      setCurrentTributeDataForPayment(null); // Clear this as payment is done
+      setCurrentView("confirmation"); // Switch to confirmation view
+    } catch (e) {
+      console.error(
+        "Submission failed after payment confirmation (in TributeInputComponent):",
+        e
+      );
+      setError(
+        "Your payment was processed, but there was an issue posting your tribute. Please try again or contact support."
+      );
+      setShowPaymentModal(false);
+      setCurrentTributeDataForPayment(null);
     } finally {
-      setIsSubmitting(false);
+      setIsProcessingTribute(false);
     }
   };
 
-  const getButtonTextOrIcon = () => {
-    // ... (same as before)
-    switch (submitStatus) {
-      case "posting":
-        return (
-          <div
-            className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"
-            role="status"
-            aria-live="polite"
-          >
-            <span className="sr-only">Sending...</span>
-          </div>
-        );
-      case "posted":
-        return <CheckCircle size={20} aria-hidden="true" />;
-      default:
-        return <Send size={20} aria-hidden="true" />;
+  const handleModalClose = () => {
+    setShowPaymentModal(false);
+    setCurrentTributeDataForPayment(null);
+    // If modal is closed by "Cancel" or "X", and not after success, reset processing state.
+    // The success path auto-closes, handlePaymentSuccessAndFinalizeTribute handles setIsProcessingTribute.
+    // This onClose is also called by modal's auto-close on success, so careful with state resets here.
+    // Only reset if NOT already processing the final tribute.
+    if (!isProcessingTribute && currentView !== "confirmation") {
+      setError(""); // Clear any form validation errors
     }
+    // No need to set isProcessingTribute(false) here if payment was cancelled, as it wouldn't have started.
   };
 
-  const handleTextareaFocus = () => {
-    setIsInputFocused(true);
+  const handleConfirmationDone = () => {
+    // Reset all form states when user is done with confirmation and returning to form
+    setMessage("");
+    setSenderName(""); // Clear default/previous values
+    setSenderRelationship(""); // Clear default/previous values
+    setSelectedFlowerId(null);
+    setError("");
+    setFormSubmitAttempted(false);
+    setCurrentView("form");
   };
 
-  // This handler is for the overlay or a potential "Done" button to close the expanded view
-  const handleCloseExpandedInput = () => {
-    setIsInputFocused(false);
-    setShowGifPicker(false); // Also close GIF picker if open
-  };
+  if (currentView === "confirmation") {
+    return (
+      <PostPaymentConfirmationComponent
+        deceasedName={deceasedName}
+        deceasedId={deceasedId} // Ensure deceasedId is passed to TributeInputComponent or use a sensible default/fallback
+        userName={senderName} // Use the name submitted with the tribute
+        onDone={handleConfirmationDone}
+        // Pass other props like funeralHomeName, siteBaseUrl if available and needed
+      />
+    );
+  }
 
+  // Otherwise, render the form (currentView === "form")
   return (
     <>
-      {/* Overlay for mobile when input is focused */}
-      {isInputFocused && (
-        <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-20 md:hidden animate-fade-in"
-          onClick={handleCloseExpandedInput} // Click overlay to close
-          aria-hidden="true"
-        ></div>
-      )}
+      <div className="w-full bg-white/80 backdrop-blur-sm shadow-lg rounded-xl py-8 px-4 sm:py-10 sm:px-6 md:px-8">
+        <div className="max-w-xl mx-auto animate-fade-in">
+          <div className="text-center mb-8 sm:mb-10">
+            <h2 className="text-2xl sm:text-3xl font-playfair text-slate-800 mb-2">
+              Send a Flower & Tribute
+            </h2>
+            <p className="text-sm sm:text-base text-slate-600">
+              Choose a flower and share your heartfelt message.
+            </p>
+          </div>
 
-      <div
-        className={`
-          fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-top-soft z-30
-          md:relative md:max-w-xl md:mx-auto md:shadow-none md:bg-transparent md:mt-8 md:p-0
-          transition-all duration-300 ease-in-out
-          ${isInputFocused ? "md:pb-0" : "md:pb-0"} 
-          ${isInputFocused ? "h-[55vh] sm:h-[50vh] md:h-auto" : "h-auto"} 
-          ${isInputFocused ? "flex flex-col" : ""}
-        `}
-      >
-        <div
-          className={`max-w-4xl mx-auto px-2 py-2 sm:px-4 sm:py-3 relative w-full ${
-            isInputFocused ? "flex-grow flex flex-col" : ""
-          }`}
-        >
-          {/* Attachment Preview (positioned carefully for expanded state) */}
-          {attachmentValue && attachmentType === "picture" && (
-            <div
-              className={`
-                absolute p-1.5 border border-slate-200 rounded-lg bg-white shadow-md animate-fade-in w-20 h-20 flex items-center justify-center
-                ${
-                  isInputFocused
-                    ? "bottom-full left-4 mb-3 md:left-auto md:-top-20"
-                    : "-top-20 left-4"
-                }
-              `}
-            >
-              <div className="relative w-16 h-16">
-                <Image
-                  src={attachmentValue}
-                  alt={attachmentAlt || "Selected GIF"}
-                  fill
-                  className="rounded-md object-cover"
-                />
-                <button
-                  type="button"
-                  onClick={handleRemoveAttachment}
-                  className="absolute -top-2.5 -right-2.5 bg-slate-700 text-white rounded-full p-0.5 hover:bg-red-600 transition-colors shadow-sm flex items-center justify-center w-6 h-6 z-10"
-                  aria-label="Remove attachment"
-                >
-                  <XCircle size={18} />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* GIF Picker (positioned carefully for expanded state) */}
-          {showGifPicker && (
-            <div
-              ref={gifPickerRef}
-              className={`
-                absolute p-3 bg-white shadow-xl rounded-lg border border-slate-300 z-40 animate-fade-in
-                w-auto max-w-[calc(100%-1rem)]
-                ${
-                  isInputFocused
-                    ? "bottom-[calc(100%+0.5rem)] left-2 mb-2 md:bottom-full"
-                    : "bottom-full left-2 mb-2"
-                } 
-              `}
-            >
-              <p className="text-xs font-medium text-slate-700 mb-2">
-                Select a symbolic GIF:
-              </p>
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-[20vh] md:max-h-[30vh] overflow-y-auto">
-                {PREDEFINED_GIF_IMAGES.map((img) => (
+          <div className="mb-8">
+            <label className="block text-lg font-semibold text-slate-700 mb-3 tracking-tight">
+              1. Select Your Flower
+            </label>
+            <div className="overflow-x-auto hide-scrollbar py-2 -mx-1 px-1">
+              <div className="flex space-x-3 min-w-max pb-2">
+                {flowerOptions.map((flower) => (
                   <button
-                    key={img.id}
+                    key={flower.id}
                     type="button"
-                    onClick={() => handleSelectGif(img.src, img.alt)}
-                    className="p-1 rounded border-2 border-transparent hover:border-amber-400 focus:border-amber-500 focus:outline-none transition-all group text-left"
-                    aria-label={`Select GIF: ${img.alt}`}
+                    onClick={() => {
+                      setSelectedFlowerId(flower.id);
+                      setError("");
+                    }}
+                    aria-pressed={selectedFlowerId === flower.id}
+                    className={`flex-shrink-0 w-40 sm:w-48 bg-white border-2 rounded-xl overflow-hidden text-left transition-all duration-200 ease-in-out group focus:outline-none
+                      shadow-md hover:shadow-lg focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-amber-400
+                      ${
+                        selectedFlowerId === flower.id
+                          ? "border-amber-500 ring-2 ring-amber-400"
+                          : "border-slate-200 hover:border-amber-400"
+                      }`}
                   >
-                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded overflow-hidden relative group-hover:opacity-80 transition-opacity bg-slate-100">
+                    <div className="relative w-full h-36 sm:h-40 bg-slate-100 group-hover:opacity-90 transition-opacity">
                       <Image
-                        src={img.src}
-                        alt={img.alt}
+                        src={flower.imageUrl}
+                        alt={flower.label}
                         fill
-                        className="object-cover"
-                        sizes="100px"
+                        style={{ objectFit: "cover" }}
+                        sizes="(max-width: 640px) 40vw, 192px"
+                        className="transition-transform duration-300 group-hover:scale-105"
                       />
+                      {selectedFlowerId === flower.id && (
+                        <div className="absolute top-1.5 right-1.5 bg-amber-500 text-white rounded-full p-0.5 shadow-md">
+                          <CheckCircleIcon
+                            className="h-4 w-4"
+                            aria-hidden="true"
+                          />
+                        </div>
+                      )}
                     </div>
-                    <span className="block text-xxs sm:text-xs text-slate-600 mt-1 truncate group-hover:text-amber-700">
-                      {img.alt}
-                    </span>
+                    <div className="p-3">
+                      <h4
+                        className="font-semibold text-sm text-slate-800 truncate group-hover:text-amber-700"
+                        title={flower.label}
+                      >
+                        {flower.label}
+                      </h4>
+                      <p
+                        className="text-xs text-slate-500 mt-0.5 mb-1.5 truncate"
+                        title={flower.description}
+                      >
+                        {flower.description}
+                      </p>
+                      <div className="text-sm font-bold text-slate-900">
+                        R{flower.price}
+                      </div>
+                    </div>
                   </button>
                 ))}
               </div>
-              <button
-                type="button"
-                onClick={() => setShowGifPicker(false)}
-                className="block text-xs text-slate-500 hover:text-amber-600 mt-3 w-full text-center font-medium"
-              >
-                Cancel
-              </button>
             </div>
-          )}
+          </div>
 
-          {/* Close button for expanded mobile view */}
-          {isInputFocused && (
-            <div className="flex justify-end md:hidden mb-2 px-1">
-              <button
-                type="button"
-                onClick={handleCloseExpandedInput}
-                className="p-1.5 text-slate-500 hover:text-slate-700"
-                aria-label="Close message input"
-              >
-                <ChevronDown size={24} />
-                {/* Or <X size={20} /> if preferred */}
-              </button>
-            </div>
-          )}
-
-          <form
-            onSubmit={handleSubmit}
-            ref={formRef}
-            className={`flex items-end gap-2 ${
-              isInputFocused
-                ? "flex-grow flex-col md:flex-row md:items-end"
-                : "items-center"
+          <div
+            className={`transition-all duration-500 ease-in-out ${
+              selectedFlowerId
+                ? "opacity-100 max-h-[1000px] visible"
+                : "opacity-0 max-h-0 invisible pointer-events-none"
             }`}
           >
-            <div
-              className={`flex items-center gap-1 sm:gap-2 flex-shrink-0 ${
-                isInputFocused
-                  ? "mb-2 md:mb-0 w-full md:w-auto justify-center"
-                  : ""
-              }`}
-            >
-              <button
-                type="button"
-                onClick={() => {
-                  setShowGifPicker(!showGifPicker);
-                  if (!isInputFocused) setIsInputFocused(true); // Focus input if picker is opened from collapsed state
-                  textareaRef.current?.focus(); // Keep textarea focused
-                }}
-                className="p-2.5 sm:p-3 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition-all duration-200 ease-in-out"
-                aria-label="Add symbolic GIF"
-                aria-expanded={showGifPicker}
-                title="Add symbolic GIF"
-              >
-                <Flower size={20} className="text-rose-500" />
-              </button>
-            </div>
+            {selectedFlowerId && (
+              <div className="mt-6 mb-8 animate-fade-in space-y-5">
+                <label className="block text-lg font-semibold text-slate-700 tracking-tight">
+                  2. Your Details & Message
+                </label>
+                <div className="space-y-4">
+                  <div>
+                    <label htmlFor="senderName" className="sr-only">
+                      Your Full Name
+                    </label>
+                    <input
+                      type="text"
+                      id="senderName"
+                      name="senderName"
+                      value={senderName}
+                      onChange={(e) => setSenderName(e.target.value)}
+                      placeholder="Your Full Name"
+                      className="w-full border border-slate-300 rounded-lg px-3.5 py-3 text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 shadow-sm placeholder-slate-400"
+                      aria-label="Your full name"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="senderRelationship" className="sr-only">
+                      Your Relationship to the Deceased
+                    </label>
+                    <input
+                      type="text"
+                      id="senderRelationship"
+                      name="senderRelationship"
+                      value={senderRelationship}
+                      onChange={(e) => setSenderRelationship(e.target.value)}
+                      placeholder="Your Relationship (e.g., Friend, Family)"
+                      className="w-full border border-slate-300 rounded-lg px-3.5 py-3 text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 shadow-sm placeholder-slate-400"
+                      aria-label="Your relationship to the deceased"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="tributeMessage" className="sr-only">
+                      Share your tribute or condolences...
+                    </label>
+                    <textarea
+                      id="tributeMessage"
+                      name="tributeMessage"
+                      rows={5}
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      placeholder="Share your tribute or condolences..."
+                      className="w-full border border-slate-300 rounded-lg px-3.5 py-3 text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 resize-none shadow-sm placeholder-slate-400"
+                      aria-label="Tribute message"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
 
-            <div
-              className={`flex-grow relative w-full ${
-                isInputFocused ? "flex flex-col h-full" : ""
-              }`}
+          {error && !showPaymentModal && (
+            <p
+              className="text-red-600 text-sm text-center mb-4 p-3 bg-red-50 border border-red-200 rounded-md"
+              role="alert"
             >
-              <textarea
-                ref={textareaRef}
-                value={message}
-                onChange={(e) => {
-                  if (e.target.value.length <= MAX_CHAR_LIMIT) {
-                    setMessage(e.target.value);
-                  }
-                }}
-                onFocus={handleTextareaFocus}
-                // onBlur is tricky with other interactive elements, using explicit close/overlay click instead
-                placeholder={
-                  isInputFocused
-                    ? "Share your memories, anecdotes, or a heartfelt message..."
-                    : "Share your memories..."
-                }
-                maxLength={MAX_CHAR_LIMIT}
-                rows={isInputFocused ? 6 : 1} // Dynamically change rows
-                className={`
-                  w-full p-3 pr-16 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 
-                  transition-all duration-300 ease-in-out text-sm resize-none overflow-y-auto
-                  ${isInputFocused ? "h-full md:h-28" : "h-[46px]"}
-                `}
-                disabled={isSubmitting || submitStatus === "posted"}
-                aria-label="Tribute message"
-              />
-              <span
-                className={`
-                absolute right-3 text-xs text-slate-400 pointer-events-none
-                ${isInputFocused ? "bottom-2" : "top-1/2 -translate-y-1/2"}
-              `}
-              >
-                {message.length}/{MAX_CHAR_LIMIT}
-              </span>
-            </div>
+              {error}
+            </p>
+          )}
 
-            <button
-              type="submit"
-              disabled={
-                (!message.trim() && !attachmentValue) ||
-                isSubmitting ||
-                submitStatus === "posted"
-              }
-              className={`
-                flex-shrink-0 flex items-center justify-center p-3 rounded-lg shadow-md transition-all duration-200 ease-in-out h-[46px]
-                ${
-                  isInputFocused
-                    ? "w-full md:w-auto md:px-4 mt-2 md:mt-0"
-                    : "w-[46px] md:px-4 md:w-auto"
-                }
-                ${
-                  submitStatus === "posted"
-                    ? "bg-green-500 hover:bg-green-600"
-                    : "bg-amber-600 hover:bg-amber-700"
-                }
-                text-white disabled:opacity-60 disabled:cursor-not-allowed
-              `}
-              aria-label={
-                submitStatus === "posting"
-                  ? "Sending tribute..."
-                  : submitStatus === "posted"
-                  ? "Tribute sent successfully"
-                  : "Send tribute"
-              }
-              title={
-                submitStatus === "posting"
-                  ? "Sending..."
-                  : submitStatus === "posted"
-                  ? "Sent!"
-                  : "Send your tribute"
-              }
-            >
-              {getButtonTextOrIcon()}
-              <span
-                className={`
-                ${isInputFocused ? "ml-2 inline" : "hidden md:ml-2 md:inline"}
-              `}
+          {/* Replaced submitSuccess with formSubmitAttempted for a general pre-modal success/status message if needed */}
+          {formSubmitAttempted &&
+            !error &&
+            !showPaymentModal &&
+            selectedFlowerId /* Add more relevant condition if a pre-modal success message is needed */ && (
+              <p
+                className="text-green-600 text-sm text-center mb-4 p-3 bg-green-50 border border-green-200 rounded-md"
+                role="status"
               >
-                {submitStatus === "idle" ? "Send" : ""}
-                {isInputFocused && submitStatus === "idle" && (
-                  <span className="md:hidden"> Tribute</span>
-                )}
-              </span>
-            </button>
-          </form>
+                Details ready. Proceeding to secure payment...
+              </p>
+            )}
+
+          <button
+            onClick={handleSubmit}
+            disabled={
+              isProcessingTribute || !canProceedToPayment || showPaymentModal
+            }
+            className={`w-full flex items-center justify-center bg-amber-500 text-white py-3 px-5 rounded-lg font-semibold text-base hover:bg-amber-600 disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200 ease-in-out shadow-md hover:shadow-lg
+              focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-amber-500`}
+          >
+            {isProcessingTribute ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white">
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Finalizing...
+              </>
+            ) : selectedFlowerDetails ? (
+              `Proceed to Send R${selectedFlowerDetails.price} Tribute`
+            ) : (
+              "Complete All Steps to Proceed"
+            )}
+          </button>
         </div>
       </div>
+
+      {showPaymentModal &&
+        currentTributeDataForPayment &&
+        selectedFlowerDetails && (
+          <PaymentEmulationModal
+            isOpen={showPaymentModal}
+            onClose={handleModalClose} // Use the new handler
+            flowerLabel={selectedFlowerDetails.label}
+            amount={selectedFlowerDetails.price}
+            tributeData={currentTributeDataForPayment}
+            onPaymentSuccess={handlePaymentSuccessAndFinalizeTribute}
+            deceasedName={deceasedName}
+          />
+        )}
     </>
   );
 };

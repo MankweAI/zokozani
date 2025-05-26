@@ -28,23 +28,33 @@ const config = {
           '"Segoe UI Symbol"',
           '"Noto Color Emoji"',
         ],
+        playfair: ["Playfair Display", "serif"],
       },
-      colors: {
-        slate: {
-          ...colors.slate,
-          850: "#1c273acc",
+      colors: { // Example soft palette
+        'cream': '#FFF9E6',
+        'muted-blue': {
+          '100': '#E0E7FF',
+          '300': '#A5B4FC',
+          '600': '#4F46E5', // A bit stronger for CTAs
+          '800': '#3730A3',
         },
-        stone: {
-          ...colors.stone,
-          50: "#fafaf9",
-          100: "#f5f5f4",
+        'soft-gray': {
+          '100': '#F3F4F6',
+          '200': '#E5E7EB',
+          '300': '#D1D5DB',
+          '400': '#9CA3AF',
+          '500': '#6B7280', // Slightly stronger for text
         },
-        amber: {
-          // Amber colors are used for the glow
-          ...colors.amber,
-        },
-        sky: {
-          ...colors.sky,
+        'amber': {
+          '100': '#FFFBEB',
+          '200': '#FEF3C7',
+          '300': '#FDE68A', // Softer amber for highlights
+          '400': '#FCD34D',
+          '500': '#FBBF24', // Stronger for CTAs
+          '600': '#F59E0B',
+          '700': '#D97706',
+          '800': '#B45309',
+          '900': '#92400E',
         },
       },
       boxShadow: {
