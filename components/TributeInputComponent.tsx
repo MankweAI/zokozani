@@ -201,7 +201,7 @@ const TributeInputComponent: React.FC<TributeInputComponentProps> = ({
 
           <div className="mb-8">
             <label className="block text-lg font-semibold text-slate-700 mb-3 tracking-tight">
-              1. Select Your Flower
+              Select Your Flower
             </label>
             <div className="overflow-x-auto hide-scrollbar py-2 -mx-1 px-1">
               <div className="flex space-x-3 min-w-max pb-2">
@@ -273,7 +273,7 @@ const TributeInputComponent: React.FC<TributeInputComponentProps> = ({
             {selectedFlowerId && (
               <div className="mt-6 mb-8 animate-fade-in space-y-5">
                 <label className="block text-lg font-semibold text-slate-700 tracking-tight">
-                  2. Your Details & Message
+                  Your Details & Message
                 </label>
                 <div className="space-y-4">
                   <div>
@@ -376,9 +376,9 @@ const TributeInputComponent: React.FC<TributeInputComponentProps> = ({
                 Finalizing...
               </>
             ) : selectedFlowerDetails ? (
-              `Proceed to Send R${selectedFlowerDetails.price} Tribute`
+              `Proceed to Send a R${selectedFlowerDetails.price} Flower`
             ) : (
-              "Complete All Steps to Proceed"
+              "No flower selected"
             )}
           </button>
         </div>
