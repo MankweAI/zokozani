@@ -27,7 +27,7 @@ const flowerOptions = [
     id: "carnations", // Kept id
     label: "Pink Carnations",
     price: 140, // Positioned between Lilies and Orchids
-    description: "Representing remembrance and heartfelt gratitude.", // Slightly refined description
+    description: "Representing Lethukuthula and heartfelt gratitude.", // Slightly refined description
     imageUrl: "/assets/images/flower-carnation.jpg",
   },
   {

@@ -10,7 +10,6 @@ interface TributeFeedComponentProps {
 // Static mock data for Phase 2 layout (if you want the component to self-contain this for initial layout)
 // Or, you can remove this if you always pass tributes from app/page.tsx
 
-
 const TributeFeedComponent: React.FC<TributeFeedComponentProps> = ({
   tributes, // Tributes will be passed from app/page.tsx
 }) => {
@@ -28,7 +27,7 @@ const TributeFeedComponent: React.FC<TributeFeedComponentProps> = ({
             Be the first to leave a tribute.
           </p>
           <p className="text-sm text-slate-400 mt-2">
-            Share a memory or light a candle in remembrance.
+            Share a memory or light a candle in Lethukuthula.
           </p>
         </div>
       )}
