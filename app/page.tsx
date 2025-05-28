@@ -18,11 +18,11 @@ import { PhoneCall, Edit3, CalendarDays } from "lucide-react"; // Icons for foot
 
 const deceasedInfo = {
   id: "lerato-nomvula-mnguni-memorial",
-  fullName: "Koko Sarah Moshiga",
+  fullName: "Koko Maria Ledwaba",
   lifespan: "1950 – 2025",
   portraitPlaceholderUrl: "/assets/images/portrait.png",
   coverImageUrl: "/assets/images/default-cover-placeholder.jpg", // Ensure this image exists
-  funeralHomeName: "Lethukuthula Funerals",
+  funeralHomeName: "Lethukuthula Funeral Home",
 };
 
 type PageView = "form" | "confirmation"; // For the tribute submission flow
@@ -31,7 +31,7 @@ type MainTabName = "Tributes" | "Program"; // For the new main tabs
 export default function TributePage() {
   const [isLoadingPage, setIsLoadingPage] = useState(true);
   const [currentView, setCurrentView] = useState<PageView>("form"); // Manages view within "Tributes" tab
-  const [activeMainTab, setActiveMainTab] = useState<MainTabName>("Tributes"); // Manages main tabs
+  const [activeMainTab, setActiveMainTab] = useState<MainTabName>("Program"); // Manages main tabs
   const [confirmationData, setConfirmationData] = useState<{
     deceasedName: string;
     deceasedId: string;
@@ -45,8 +45,9 @@ export default function TributePage() {
     label: string;
     icon: React.ElementType;
   }[] = [
-    { name: "Tributes", label: "Send Tribute", icon: Edit3 }, // Icon for tribute creation
     { name: "Program", label: "Funeral Program", icon: CalendarDays },
+
+    { name: "Tributes", label: "Send Tribute", icon: Edit3 }, // Icon for tribute creation
   ];
 
   const programPart1 = [
@@ -324,9 +325,9 @@ export default function TributePage() {
             <h4 className="text-xl font-playfair text-slate-700 mb-2">
               {deceasedInfo.funeralHomeName}
             </h4>
-            <p className="text-sm text-slate-500 mb-5 max-w-sm mx-auto">
-              Offering compassionate support and professional guidance when you
-              need it most.
+            <p className="text-sm text-slate-500 mb-4 max-w-sm mx-auto">
+              Secure complete peace of mind by planning ahead. Let us call you
+              during the week.
             </p>
             <button
               onClick={() => setIsFuneralModalOpen(true)}
