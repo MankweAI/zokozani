@@ -2,18 +2,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { v4 as uuidv4 } from "uuid";
-// useRouter is not strictly needed for this version
 import HeaderComponent from "@/components/HeaderComponent";
-import TributeInputComponent, {
-  type NewTributeDataFromInput,
-} from "@/components/TributeInputComponent";
-import PostPaymentConfirmationComponent from "@/components/PostPaymentConfirmationComponent";
+import TributeInputComponent from "@/components/TributeInputComponent"; // No longer importing NewTributeDataFromInput
 import FuneralHomeCTAComponent from "@/components/FuneralHomeCTAComponent";
-import {
-  loadTributesFromLocalStorage,
-  saveTributesToLocalStorage,
-} from "@/lib/localStorageUtils";
 import { PhoneCall, Edit3, CalendarDays } from "lucide-react"; // Icons for footer CTA and tabs
 
 const deceasedInfo = {
@@ -25,18 +16,14 @@ const deceasedInfo = {
   funeralHomeName: "Lethukuthula Funeral Home",
 };
 
-type PageView = "form" | "confirmation"; // For the tribute submission flow
+type PageView = "form" | "confirmation"; // Keeping for potential future use or if other form/confirmation logic remains elsewhere
 type MainTabName = "Tributes" | "Program"; // For the new main tabs
 
 export default function TributePage() {
   const [isLoadingPage, setIsLoadingPage] = useState(true);
-  const [currentView, setCurrentView] = useState<PageView>("form"); // Manages view within "Tributes" tab
+  const [currentView] = useState<PageView>("form"); // Manages view within "Tributes" tab
   const [activeMainTab, setActiveMainTab] = useState<MainTabName>("Program"); // Manages main tabs
-  const [confirmationData, setConfirmationData] = useState<{
-    deceasedName: string;
-    deceasedId: string;
-    userName: string;
-  } | null>(null);
+  // Removed confirmationData state
   const [isFuneralModalOpen, setIsFuneralModalOpen] = useState(false);
 
   // Define tabs for navigation
@@ -46,28 +33,27 @@ export default function TributePage() {
     icon: React.ElementType;
   }[] = [
     { name: "Program", label: "Funeral Program", icon: CalendarDays },
-
     { name: "Tributes", label: "Send Tribute", icon: Edit3 }, // Icon for tribute creation
   ];
 
   const programPart1 = [
     { event: "Opening Prayer", by: "Church Representative" },
     { event: "Opening Remarks", by: "Programme Director" },
-    { event: "Tribute by Family", by: "Moshiga Family & Letshedi Family" },
-    { event: "Tribute by Children of the Deceased", by: "" }, // Assuming children give their own tribute
-    { event: "Tribute by Church", by: "Church Representative" }, // Clarified to distinguish from opening prayer
+    { event: "Tribute by Family", by: "Ledwaba Family & Letshedi Family" },
+    { event: "Tribute by Children of the Deceased", by: "" },
+    { event: "Tribute by Church", by: "Church Representative" },
     {
       event: "Word of God / Scripture Reading",
       by: "Officiating Minister / Church Elder",
-    }, // More specific
-    { event: "Procession to the Grave", by: "" }, // Usually no specific 'by' for procession
+    },
+    { event: "Procession to the Grave", by: "" },
   ];
 
   const programPart2 = [
     { event: "Committal Service Opening Prayer", by: "Pastor" },
     { event: "Burial Rites & Committal", by: "Pastor" },
-    { event: "Vote of Thanks", by: "Family Representative / Friend" }, // Often a family member or close friend
-    { event: "Message from Tribal Leadership", by: "Tribal Representative" }, // More specific
+    { event: "Vote of Thanks", by: "Family Representative / Friend" },
+    { event: "Message from Tribal Leadership", by: "Tribal Representative" },
     {
       event: "Family Benediction & Closing Prayer",
       by: "Family Member / Pastor",
@@ -78,50 +64,11 @@ export default function TributePage() {
     setIsLoadingPage(false); // Simplified loading, no auth check
   }, []);
 
-  const handleAddTribute = async (
-    data: NewTributeDataFromInput
-  ): Promise<void> => {
-    const newTributeToStore = {
-      id: uuidv4(),
-      name: data.senderName,
-      relationship: data.senderRelationship,
-      message: data.message,
-      flowerId: data.flowerId,
-      timestamp: Date.now(),
-    };
-
-    const existingTributes = loadTributesFromLocalStorage(
-      deceasedInfo.fullName
-    );
-    const updatedTributes = [newTributeToStore, ...existingTributes];
-    updatedTributes.sort((a, b) => b.timestamp - a.timestamp);
-    saveTributesToLocalStorage(deceasedInfo.fullName, updatedTributes);
-    console.log("Tribute saved:", newTributeToStore);
-
-    setConfirmationData({
-      deceasedName: deceasedInfo.fullName,
-      deceasedId: deceasedInfo.id,
-      userName: data.senderName,
-    });
-    setCurrentView("confirmation"); // This will show PostPaymentConfirmationComponent within the Tributes tab
-  };
-
-  const handleConfirmationDone = () => {
-    setCurrentView("form"); // Reset to form view within Tributes tab
-    setConfirmationData(null);
-    // setActiveMainTab("Tributes"); // Optionally ensure Tributes tab is active
-  };
+  // Removed handleAddTribute function
+  // Removed handleConfirmationDone function
 
   const handleTabClick = (tabName: MainTabName) => {
     setActiveMainTab(tabName);
-    // If switching away from tributes confirmation, reset the tribute form view
-    if (tabName !== "Tributes" && currentView === "confirmation") {
-      // setCurrentView("form"); // Or let it persist if user switches back
-      // setConfirmationData(null);
-    }
-    // If user switches to "Tributes" tab and it was on confirmation,
-    // it will show confirmation. If they then click "Done" in confirmation,
-    // it will go back to the form view within the Tributes tab. This seems fine.
   };
 
   if (isLoadingPage) {
@@ -195,27 +142,27 @@ export default function TributePage() {
           {currentView === "form" && (
             <div className="animate-fade-in pt-0 md:pt-2 pb-8">
               <TributeInputComponent
-                onAddTribute={handleAddTribute}
                 deceasedName={deceasedInfo.fullName}
-                deceasedId={deceasedInfo.id}
+                // Removed onAddTribute and deceasedId props as tribute submission logic is gone
               />
             </div>
           )}
-          {currentView === "confirmation" && confirmationData && (
+          {currentView === "confirmation" && (
+            // PostPaymentConfirmationComponent is no longer needed here without tribute submission
+            // but keeping the structure in case currentView 'confirmation' is used elsewhere.
+            // However, since handleConfirmationDone is removed, this block would effectively be dead code.
+            // For now, I'll remove the component itself to truly remove tribute logic.
+            // If you still need 'confirmation' view for other purposes, let me know!
             <div className="animate-fade-in py-8">
-              <PostPaymentConfirmationComponent
-                deceasedName={confirmationData.deceasedName}
-                deceasedId={confirmationData.deceasedId}
-                userName={confirmationData.userName}
-                // funeralHomeName={deceasedInfo.funeralHomeName}
-                onDone={handleConfirmationDone}
-              />
+              {/* Removed PostPaymentConfirmationComponent */}
+              <p className="text-center text-slate-600">
+                Tribute confirmation functionality has been removed.
+              </p>
             </div>
           )}
         </div>
 
         {/* Program Tab Content */}
-        {/* Program Tab Content - Redesigned */}
         <div
           id="main-tabpanel-Program"
           role="tabpanel"
@@ -225,8 +172,6 @@ export default function TributePage() {
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 animate-fade-in">
             <div className="bg-white shadow-2xl rounded-2xl overflow-hidden">
               <div className="px-6 py-10 sm:p-12 bg-gradient-to-br from-slate-50 to-stone-100">
-                {" "}
-                {/* Soft gradient header for the program */}
                 <h2 className="text-3xl sm:text-4xl font-playfair text-center text-slate-800 mb-3">
                   Order of Service
                 </h2>
@@ -240,7 +185,6 @@ export default function TributePage() {
                 {/* Part 1: Home */}
                 <section>
                   <div className="flex items-center mb-6 pb-2 border-b-2 border-slate-100">
-                    {/* <Home size={28} className="text-amber-600 mr-3 flex-shrink-0" /> */}
                     <span className="text-2xl bg-amber-500 text-white rounded-full h-10 w-10 flex items-center justify-center font-playfair mr-4 shadow-sm">
                       1
                     </span>
@@ -255,7 +199,6 @@ export default function TributePage() {
                         className="relative pl-8 group"
                       >
                         <span className="absolute left-[-13px] top-[calc(0.75rem_-_0.5rem)] w-5 h-5 bg-white border-2 border-amber-400 rounded-full group-hover:bg-amber-400 group-hover:scale-110 transition-all duration-200 shadow"></span>{" "}
-                        {/* Timeline dot */}
                         <div className="flex flex-col md:flex-row md:items-baseline md:justify-between">
                           <span className="font-semibold text-slate-700 text-base md:text-lg block leading-tight">
                             {item.event}
@@ -274,7 +217,6 @@ export default function TributePage() {
                 {/* Part 2: Cemetery */}
                 <section>
                   <div className="flex items-center mb-6 pb-2 border-b-2 border-slate-100 pt-4">
-                    {/* <Flower2 size={28} className="text-amber-600 mr-3 flex-shrink-0" /> */}
                     <span className="text-2xl bg-amber-500 text-white rounded-full h-10 w-10 flex items-center justify-center font-playfair mr-4 shadow-sm">
                       2
                     </span>
@@ -318,7 +260,6 @@ export default function TributePage() {
       </main>
 
       {/* Subtle Funeral Home CTA - remains in the footer */}
-      {/* This footer will show if not in confirmation view, regardless of active tab */}
       {currentView === "form" && (
         <footer className="py-8 border-t border-slate-200/80 bg-white text-center">
           <div className="max-w-lg mx-auto px-4">
@@ -331,10 +272,10 @@ export default function TributePage() {
             </p>
             <button
               onClick={() => setIsFuneralModalOpen(true)}
-              className="text-sm text-amber-700 hover:text-amber-800 font-semibold transition-colors group flex items-center justify-center mx-auto 
+              className="text-sm text-amber-700 hover:text-amber-800 font-semibold transition-colors group flex items-center justify-center mx-auto
                                px-6 py-2.5 border-2 border-amber-500/40 hover:border-amber-500 rounded-lg hover:bg-amber-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
             >
-              <PhoneCall // Using PhoneCall as per last button refinement
+              <PhoneCall
                 size={16}
                 className="mr-2 text-amber-600 group-hover:text-amber-700 transition-colors"
               />
