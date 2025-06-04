@@ -27,7 +27,7 @@ const TributeFeedComponent: React.FC<TributeFeedComponentProps> = ({
             Be the first to leave a tribute.
           </p>
           <p className="text-sm text-slate-400 mt-2">
-            Share a memory or light a candle in Lebowa.
+            Share a memory or light a candle in Zokosani.
           </p>
         </div>
       )}
