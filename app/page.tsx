@@ -13,7 +13,7 @@ const deceasedInfo = {
   lifespan: "1950 – 2025",
   portraitPlaceholderUrl: "/assets/images/portrait.png",
   coverImageUrl: "/assets/images/default-cover-placeholder.jpg", // Ensure this image exists
-  funeralHomeName: "Lethukuthula Funeral Home",
+  funeralHomeName: "Lebowa Funeral Home",
 };
 
 type PageView = "form" | "confirmation"; // Keeping for potential future use or if other form/confirmation logic remains elsewhere
